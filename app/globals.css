@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* estilos globais extras */
+html, body {
+  @apply bg-neutral-50 text-neutral-900 antialiased;
+}
+
+button {
+  @apply transition duration-200;
+}
+
+@keyframes kitchenflash {
+  0%, 100% { filter: invert(0); background: #ffffff; }
+  50%      { filter: invert(1); background: #000000; }
+}
+
+.kitchen-flash {
+  animation: kitchenflash .6s steps(2) infinite;
+}
