@@ -1,20 +1,64 @@
+// app/salon/page.tsx
 'use client'
-import { useEffect, useState } from 'react'
-import { ProductGrid } from '../../components/ProductGrid'
-import { Product, api } from '../../lib/api'
-import { ensureStarted } from '../../lib/signalr'
 
+import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
+import ProductsToolbar, { Filter } from '../../components/ProductsToolbar'
+import ProductGrid from '../../components/ProductGrid'
+import { listProducts } from '../../lib/api'
+import { BackButton } from '../../components/ui/back-button'
 export default function SalonPage() {
-  const [items, setItems] = useState<Product[]>([])
-  const refresh = () => api.listProducts().then(setItems)
+  const sp = useSearchParams()
+  const initialCats = useMemo(() => {
+    const raw = sp.get('cat') || ''
+    return raw ? raw.split(',') : []
+  }, [sp])
 
-  useEffect(() => { refresh(); ensureStarted() }, [])
+  const [filter, setFilter] = useState<Filter>({
+    q: sp.get('q') || '',
+    categories: initialCats,
+    onlyAvailable: true,
+    sort: 'az'
+  })
+  const [items, setItems] = useState<any[]>([])
+  const [loading, setLoading] = useState(false)
+
+  async function load() {
+    setLoading(true)
+    try {
+      const data = await listProducts({
+        q: filter.q,
+        categories: filter.categories,
+        onlyAvailable: filter.onlyAvailable,
+        sort: filter.sort
+      })
+      setItems(data)
+    } finally { setLoading(false) }
+  }
+
+  useEffect(()=>{ load() }, [filter]) // eslint-disable-line
+
+  const allCategories = ['Saladas','Carnes','Acompanhamentos','Guarnições','Frituras','Especiais','Porções','Pratos']
 
   return (
-    <div className="space-y-3">
-      <h1 className="text-xl font-semibold">Pedido Rápido</h1>
-      <p className="text-sm text-neutral-600">Toque ou segure 0,5s para enviar. Cards bloqueiam enquanto enviam.</p>
-      <ProductGrid items={items} refresh={refresh} />
+    <div className="mx-auto max-w-5xl p-4 space-y-4">
+      <div className="flex items-center justify-between">
+        <BackButton />
+        <h1 className="text-xl font-semibold">Pedido Rápido</h1>
+        <a href="/categories" className="text-sm underline">Categorias</a>
+      </div>
+
+      <ProductsToolbar
+        allCategories={allCategories}
+        initial={filter}
+        onChange={setFilter}
+      />
+
+      {loading && <div className="text-sm text-neutral-500">Carregando…</div>}
+      {!loading && <ProductGrid items={items} />}
+      {!loading && items.length===0 && (
+        <div className="text-sm text-neutral-500">Sem resultados para os filtros atuais.</div>
+      )}
     </div>
   )
 }

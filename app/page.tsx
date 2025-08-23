@@ -5,6 +5,7 @@ import { Card } from '../components/ui/card'
 
 export default function Home() {
   const cards = [
+    { href: '/categories', title: 'Pedido por categoria', desc: 'Pedidos por categoria.' },
     { href: '/salon', title: 'Pedido Rápido (Salão)', desc: 'Envie pedidos em 1 toque ou hold.' },
     { href: '/kitchen', title: 'Painel da Cozinha', desc: 'Receba pedidos, timer e ações.' },
     { href: '/products', title: 'Gestão de Produtos', desc: 'Cadastre, edite e remova itens.' },

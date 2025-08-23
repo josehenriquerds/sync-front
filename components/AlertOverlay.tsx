@@ -23,8 +23,8 @@ export function AlertOverlay({
           {/* fundo piscando */}
           <div className="absolute inset-0 kitchen-flash" />
           {/* conteúdo */}
-          <div className="relative text-center px-6">
-            <div className="text-4xl md:text-6xl font-extrabold mix-blend-difference text-white drop-shadow">
+          <div className="relative text-center px-10">
+            <div className="text-8xl md:text-10xl font-extrabold mix-blend-difference text-white drop-shadow">
               {text}
             </div>
             <div className="mt-2 text-white/70 mix-blend-difference">novo pedido</div>

@@ -1,26 +1,27 @@
+// components/ProductGrid.tsx
 'use client'
 
-import type { Product } from '../lib/api'
-import { ProductCard } from './ProductCard'
+import { Product } from "../lib/api"
+import { ProductCard } from "./ProductCard"
 
 
-type Props = {
+export type ProductGridProps = {
   items: Product[]
-  refresh: () => Promise<void>
+  refresh?: () => Promise<void>
 }
 
-export function ProductGrid({ items, refresh }: Props) {
+export default function ProductGrid({ items, refresh }: ProductGridProps) {
   return (
     <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
       {items.map((p) => (
         <ProductCard
-          key={p.id}                // 'key' é especial e não faz parte de Props
+          key={p.id}
           id={p.id}
           name={p.name}
           category={p.category}
           prepSeconds={p.prepSeconds}
           available={p.available}
-          refresh={refresh}         // passe se o card precisar chamar refresh()
+          refresh={refresh}
         />
       ))}
     </div>
