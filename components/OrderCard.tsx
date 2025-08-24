@@ -113,7 +113,7 @@ export function OrderCard({
         </ul>
 
         {/* Barra de progresso mais grossa */}
-        <div className="mt-6">
+        {/* <div className="mt-6">
           <div className="mb-2 flex items-center justify-between text-sm text-neutral-600">
             <span>Progresso</span>
             <span>{pctBar}%</span>
@@ -121,11 +121,11 @@ export function OrderCard({
           <div className="h-4 md:h-5">
             <Progress value={pctBar} />
           </div>
-        </div>
+        </div> */}
 
         {/* Ações grandes */}
-        {/* <div className="mt-6 flex gap-3">
-          {o.status === 'Pending' && (
+        <div className="mt-6 flex gap-3">
+          {/* {o.status === 'Pending' && (
             <Button
               className="flex-1 h-14 text-lg font-semibold"
               onClick={onStart}
@@ -133,17 +133,17 @@ export function OrderCard({
             >
               Iniciar preparo
             </Button>
-          )}
+          )} */}
           {o.status !== 'Completed' && (
             <Button
-              className="flex-1 h-14 text-lg font-semibold bg-green-600 hover:bg-green-700 text-white"
+              className="flex-1 h-10 text-lg font-semibold bg-green-600 hover:bg-green-500 text-white"
               onClick={onComplete}
               title="Marcar como 'Concluído'"
             >
               Concluir
             </Button>
           )}
-        </div> */}
+        </div>
       </Card>
     </motion.div>
   )
