@@ -2,6 +2,7 @@
 
 import { AnimatePresence } from "framer-motion";
 import { useState, useEffect, useMemo, useRef } from "react";
+import clsx from "clsx";
 import { Order, api } from "../lib/api";
 import { ensureStarted } from "../lib/signalr";
 import { AlertOverlay } from "./AlertOverlay";
@@ -11,12 +12,24 @@ import { useSound } from "./useSound";
 
 const keepActive = (list: Order[]) => list.filter(o => o.status !== 'Completed')
 
+// detecta Fire TV / Silk / Fire Stick
+function useIsTV() {
+  const [isTV, setIsTV] = useState(false)
+  useEffect(() => {
+    const ua = navigator.userAgent || ''
+    const tv = /Silk|AFT|AmazonWebAppPlatform|SmartTV/i.test(ua)
+    setIsTV(tv)
+  }, [])
+  return isTV
+}
+
 export function KitchenBoard() {
   const [orders, setOrders] = useState<Order[]>([])
   const [alert, setAlert] = useState<{show: boolean; text: string}>({ show: false, text: '' })
   const { toast } = useToast()
   const { enabled, ensureSound, beep } = useSound()
   const topBarRef = useRef<HTMLDivElement | null>(null)
+  const isTV = useIsTV()
 
   useEffect(() => { ensureSound().catch(() => {}) }, [ensureSound])
 
@@ -68,15 +81,12 @@ export function KitchenBoard() {
   return (
     <>
       <style jsx global>{`
-        @keyframes blinkRed {
-          0%, 49%, 100% { color: #ef4444; }
-          50% { color: transparent; }
-        }
+        @keyframes blinkRed { 0%,49%,100%{color:#ef4444;} 50%{color:transparent;} }
         .blink-red { animation: blinkRed 1s linear infinite; }
       `}</style>
 
       {/* barra superior */}
-      <div ref={topBarRef} className="mb-3 flex items-center justify-between">
+      <div ref={topBarRef} className={clsx("mb-3 flex items-center justify-between", !isTV && "px-6")}>
         <h2 className="sr-only">Pedidos ativos</h2>
         <div />
         {!enabled && (
@@ -89,25 +99,32 @@ export function KitchenBoard() {
         )}
       </div>
 
-      {/* GRID sempre ativo, full-bleed */}
+      {/* GRID */}
       <div
-        className="
-          w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] 
-          grid gap-4 px-6
-          [grid-template-columns:repeat(auto-fit,minmax(18rem,1fr))]
-          2xl:[grid-template-columns:repeat(auto-fit,minmax(20rem,1fr))]
-        "
+        className={clsx(
+          // TV: full-bleed; Desktop: segue o container padrão
+          isTV ? "full-bleed" : "",
+        )}
       >
-        <AnimatePresence initial={false}>
-          {sorted.map(o => (
-            <OrderCard
-              key={o.id}
-              o={o}
-              onStart={() => start(o)}
-              onComplete={() => complete(o)}
-            />
-          ))}
-        </AnimatePresence>
+        <div
+          className={clsx(
+            "grid gap-4",
+            isTV ? "px-3" : "px-4 md:px-6 lg:px-8 xl:px-10",
+            "[grid-template-columns:repeat(auto-fit,minmax(14rem,1fr))]",
+            "2xl:[grid-template-columns:repeat(auto-fit,minmax(14rem,1fr))]"
+          )}
+        >
+          <AnimatePresence initial={false}>
+            {sorted.map(o => (
+              <OrderCard
+                key={o.id}
+                o={o}
+                onStart={() => start(o)}
+                onComplete={() => complete(o)}
+              />
+            ))}
+          </AnimatePresence>
+        </div>
       </div>
 
       <AlertOverlay

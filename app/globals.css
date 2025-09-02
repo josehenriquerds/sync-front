@@ -2,24 +2,32 @@
 @tailwind components;
 @tailwind utilities;
 
-/* estilos globais extras */
-html, body {
-  @apply bg-neutral-50 text-neutral-900 antialiased;
-}
-
-button {
-  @apply transition duration-200;
-}
-
-@keyframes kitchenflash {
-  0%, 100% { filter: invert(0); background: #ffffff; }
-  50%      { filter: invert(1); background: #000000; }
-}
-
-.kitchen-flash {
-  animation: kitchenflash .6s steps(2) infinite;
-}
-
+/* base */
 html, body { margin:0; padding:0; width:100%; overflow-x:hidden; }
+.full-bleed { width:100vw; position:relative; left:50%; right:50%; margin-left:-50vw; margin-right:-50vw; }
+@supports (width:100dvw) {
+  .full-bleed { width:100dvw; margin-left:calc(50% - 50dvw); margin-right:calc(50% - 50dvw); }
+}
 
+button { @apply transition duration-200; }
 
+/* efeito piscar (se usar) */
+@keyframes kitchenflash { 0%,100%{filter:invert(0);background:#fff} 50%{filter:invert(1);background:#000} }
+.kitchen-flash { animation: kitchenflash .6s steps(2) infinite; }
+
+/* FULL-BLEED: ocupa a largura do viewport, ignorando max-width/padding do pai */
+.full-bleed {
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+}
+@supports (width: 100dvw) {
+  .full-bleed {
+    width: 100dvw;
+    margin-left: calc(50% - 50dvw);
+    margin-right: calc(50% - 50dvw);
+  }
+}
