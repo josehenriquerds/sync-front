@@ -16,7 +16,10 @@ export function KitchenBoard() {
   const [alert, setAlert] = useState<{show: boolean; text: string}>({ show: false, text: '' }) // ⬅️ novo
   const { toast } = useToast()
   const { enabled, ensureSound, beep } = useSound() // ⬅️ novo
+   
 
+
+  //
   useEffect(() => {
     api.listOrders().then(data => setOrders(keepActive(data)))
 
