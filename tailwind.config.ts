@@ -5,6 +5,15 @@ export default {
     './app/**/*.{ts,tsx}',
     './components/**/*.{ts,tsx}',
   ],
-  theme: { extend: {} },
+  theme: {
+    extend: {
+      screens: {
+        tv:  '1600px',
+        fhd: '1920px',
+        qhd: '2560px',
+        uhd: '3840px',
+      }
+    }
+  },
   plugins: [],
 } satisfies Config

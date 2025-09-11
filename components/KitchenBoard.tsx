@@ -1,7 +1,7 @@
 'use client'
 
 import { AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { Order, api } from "../lib/api";
 import { ensureStarted } from "../lib/signalr";
 import { AlertOverlay } from "./AlertOverlay";
@@ -11,15 +11,40 @@ import { useSound } from "./useSound";
 
 const keepActive = (list: Order[]) => list.filter(o => o.status !== 'Completed')
 
-export function KitchenBoard() {
+// calcula a melhor min-width para caber o maior nº de colunas possível
+function calcMinCardWidth(containerWidth: number, gap: number) {
+  // ajuste estes limites conforme sua densidade mínima aceitada
+  const MIN = 260; // menor largura aceitável do card (legibilidade)
+  const MAX = 480; // evita cards gigantes em 4K
+  // tenta do maior nº de colunas para o menor e para quando couber >= MIN
+  for (const cols of [8,7,6,5,4,3,2]) {
+    const w = Math.floor((containerWidth - gap * (cols - 1)) / cols);
+    if (w >= MIN) return Math.min(w, MAX);
+  }
+  return MIN;
+}
+
+export function KitchenBoard({ tv = false }: { tv?: boolean }) {
   const [orders, setOrders] = useState<Order[]>([])
-  const [alert, setAlert] = useState<{show: boolean; text: string}>({ show: false, text: '' }) // ⬅️ novo
+  const [alert, setAlert] = useState<{show: boolean; text: string}>({ show: false, text: '' })
   const { toast } = useToast()
-  const { enabled, ensureSound, beep } = useSound() // ⬅️ novo
-   
+  const { enabled, ensureSound, beep } = useSound()
 
+  // === cálculo dinâmico do grid ===
+  const wrapRef = useRef<HTMLDivElement | null>(null)
+  const [minCard, setMinCard] = useState<number>(320)
+  const GAP = 16 // deve bater com gap-4 (16px)
 
-  //
+  useLayoutEffect(() => {
+    const ro = new ResizeObserver(([entry]) => {
+      const w = entry?.contentRect.width ?? 0
+      if (w) setMinCard(calcMinCardWidth(w, GAP))
+    })
+    if (wrapRef.current) ro.observe(wrapRef.current)
+    return () => ro.disconnect()
+  }, [])
+
+  // === dados + signalR ===
   useEffect(() => {
     api.listOrders().then(data => setOrders(keepActive(data)))
 
@@ -27,26 +52,22 @@ export function KitchenBoard() {
       conn.off('order:created'); conn.off('order:updated')
 
       conn.on('order:created', (o: Order) => {
-        // atualiza lista
         setOrders(prev => keepActive([o, ...prev.filter(p => p.id !== o.id)]))
-        // mostra overlay em tela cheia com os itens do pedido
         const items = o.items.map(i => `${i.productName} x${i.quantity}`).join(' • ')
         setAlert({ show: true, text: items })
-        // som (se permitido)
         ensureSound().then(ok => { if (ok) beep(3) })
       })
 
       conn.on('order:updated', (o: any) => {
-  // normaliza status: número -> string
-  const map = ['Pending','InProgress','Completed','Cancelled'] as const
-  const status: typeof map[number] = typeof o.status === 'number' ? map[o.status] : o.status
-  const normalized = { ...o, status }
+        const map = ['Pending','InProgress','Completed','Cancelled'] as const
+        const status: typeof map[number] = typeof o.status === 'number' ? map[o.status] : o.status
+        const normalized = { ...o, status }
 
-  setOrders(prev => {
-    if (normalized.status === 'Completed') return prev.filter(x => x.id === normalized.id ? false : true)
-    return prev.map(x => (x.id === normalized.id ? normalized : x))
-  })
-})
+        setOrders(prev => {
+          if (normalized.status === 'Completed') return prev.filter(x => x.id !== normalized.id)
+          return prev.map(x => (x.id === normalized.id ? normalized : x))
+        })
+      })
     })
   }, [])
 
@@ -61,20 +82,18 @@ export function KitchenBoard() {
     toast({ title: 'Pedido concluído', description: `#${o.id.slice(0, 8)}` })
   }
 
- const sorted = [...orders].sort((a, b) => {
-  if (a.isUrgent !== b.isUrgent) return a.isUrgent ? -1 : 1      // ⬅️ urgentes no topo
-  const rank = (s: Order['status']) => (s === 'Pending' ? 0 : s === 'InProgress' ? 1 : 2)
-  const r = rank(a.status) - rank(b.status)
-  return r !== 0 ? r : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-})
-
+  const sorted = [...orders].sort((a, b) => {
+    if (a.isUrgent !== b.isUrgent) return a.isUrgent ? -1 : 1
+    const rank = (s: Order['status']) => (s === 'Pending' ? 0 : s === 'InProgress' ? 1 : 2)
+    const r = rank(a.status) - rank(b.status)
+    return r !== 0 ? r : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  })
 
   return (
     <>
-      {/* barra superior com botão de habilitar som */}
-      <div className="mb-3 flex items-center justify-between">
-        <h2 className="sr-only">Pedidos ativos</h2>
-        <div />
+      {/* topbar minimalista: na TV, mostramos só o botão de som (se necessário) */}
+      <div className={tv ? "mb-2 flex items-center justify-end" : "mb-3 flex items-center justify-between"}>
+        {!tv && <h2 className="text-sm font-medium text-neutral-600">Pedidos ativos</h2>}
         {!enabled && (
           <button
             className="text-sm rounded-xl border px-3 py-1 shadow-sm hover:shadow transition"
@@ -86,12 +105,29 @@ export function KitchenBoard() {
         )}
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
-        <AnimatePresence initial={false}>
-          {sorted.map(o => (
-            <OrderCard key={o.id} o={o} onStart={() => start(o)} onComplete={() => complete(o)} />
-          ))}
-        </AnimatePresence>
+      {/* wrapper que mede a largura para ajustar --card-min */}
+      <div ref={wrapRef} className={tv ? "h-[calc(100svh-48px)]" : ""}>
+        <div
+          className="
+            grid
+            gap-4
+            // grade fluida: caber o máximo de colunas com min-width controlada
+            [grid-template-columns:repeat(auto-fit,minmax(var(--card-min),1fr))]
+            h-full
+          "
+          style={{ ['--card-min' as any]: `${minCard}px` }}
+        >
+          <AnimatePresence initial={false}>
+            {sorted.map(o => (
+              <OrderCard
+                key={o.id}
+                o={o}
+                onStart={() => start(o)}
+                onComplete={() => complete(o)}
+              />
+            ))}
+          </AnimatePresence>
+        </div>
       </div>
 
       <AlertOverlay

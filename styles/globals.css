@@ -4,3 +4,17 @@
 
 html, body { height: 100%; }
 body { @apply bg-neutral-50 text-neutral-900; }
+/* cards.css */
+.card { container-type: inline-size; }
+
+/* Cards muito pequenos: simplifique */
+@container (max-width: 300px) {
+  .card .item-extra, .card .icons { display:none; }
+  .card header h3 { font-size: 0.95rem; }
+}
+
+/* Cards folgados: mostrar mais status */
+@container (min-width: 420px) {
+  .card .meta { display:flex; gap: 8px; }
+  .card header h3 { font-size: 1.15rem; }
+}
