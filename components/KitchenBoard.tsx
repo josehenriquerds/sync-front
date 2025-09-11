@@ -11,17 +11,25 @@ import { useSound } from "./useSound";
 
 const keepActive = (list: Order[]) => list.filter(o => o.status !== 'Completed')
 
-// calcula a melhor min-width para caber o maior nº de colunas possível
-function calcMinCardWidth(containerWidth: number, gap: number) {
-  // ajuste estes limites conforme sua densidade mínima aceitável
-  const MIN = 220; // ↓ menor = mais colunas em FHD
-  const MAX = 480; // evita cards gigantes em 4K
-  // tenta do maior nº de colunas para o menor e para quando couber >= MIN
-  for (const cols of [8,7,6,5,4,3,2]) {
-    const w = Math.floor((containerWidth - gap * (cols - 1)) / cols);
-    if (w >= MIN) return Math.min(w, MAX);
+type Layout = { minCard: number; gap: number; dense: boolean; ultra: boolean }
+
+// Calcula layout para caber o MÁXIMO de colunas/linhas, inclusive < 960×540
+function computeLayout(width: number, height: number): Layout {
+  const small = (height < 560 || width < 960)
+  const targetMin = small ? 180 : 220
+  const MAX = 480
+  const gap = small ? 8 : 16
+
+  for (let cols = 12; cols >= 2; cols--) {
+    const w = Math.floor((width - gap * (cols - 1)) / cols)
+    if (w >= targetMin) {
+      const minCard = Math.min(w, MAX)
+      const dense = (minCard <= 220) || small
+      const ultra = (minCard <= 190) || (height < 520)
+      return { minCard, gap, dense, ultra }
+    }
   }
-  return MIN;
+  return { minCard: targetMin, gap, dense: true, ultra: height < 520 }
 }
 
 export function KitchenBoard() {
@@ -30,24 +38,21 @@ export function KitchenBoard() {
   const { toast } = useToast()
   const { enabled, ensureSound, beep } = useSound()
 
-  // === cálculo dinâmico do grid ===
   const wrapRef = useRef<HTMLDivElement | null>(null)
-  const [minCard, setMinCard] = useState<number>(320)
-  const GAP = 16 // deve bater com gap-4 (16px)
+  const [layout, setLayout] = useState<Layout>({ minCard: 320, gap: 16, dense: false, ultra: false })
 
   useLayoutEffect(() => {
     const ro = new ResizeObserver(([entry]) => {
       const w = entry?.contentRect.width ?? 0
-      if (w) setMinCard(calcMinCardWidth(w, GAP))
+      const h = entry?.contentRect.height ?? 0
+      if (w && h) setLayout(computeLayout(w, h))
     })
     if (wrapRef.current) ro.observe(wrapRef.current)
     return () => ro.disconnect()
   }, [])
 
-  // === dados + signalR ===
   useEffect(() => {
     api.listOrders().then(data => setOrders(keepActive(data)))
-
     ensureStarted().then(conn => {
       conn.off('order:created'); conn.off('order:updated')
 
@@ -62,7 +67,6 @@ export function KitchenBoard() {
         const map = ['Pending','InProgress','Completed','Cancelled'] as const
         const status: typeof map[number] = typeof o.status === 'number' ? map[o.status] : o.status
         const normalized = { ...o, status }
-
         setOrders(prev => {
           if (normalized.status === 'Completed') return prev.filter(x => x.id !== normalized.id)
           return prev.map(x => (x.id === normalized.id ? normalized : x))
@@ -70,11 +74,6 @@ export function KitchenBoard() {
       })
     })
   }, [])
-
-  async function start(o: Order) {
-    await api.updateOrderStatus(o.id, 'InProgress')
-    setOrders(prev => keepActive(prev.map(x => (x.id === o.id ? { ...x, status: 'InProgress' } : x))))
-  }
 
   async function complete(o: Order) {
     await api.updateOrderStatus(o.id, 'Completed')
@@ -90,8 +89,8 @@ export function KitchenBoard() {
   })
 
   return (
-    <div className="h-full flex flex-col">
-      {/* topbar minimalista (só o botão de som quando preciso) */}
+    <div className="h-full flex flex-col min-h-0">
+      {/* topbar mínima */}
       <div className="mb-2 flex items-center justify-end">
         {!enabled && (
           <button
@@ -104,19 +103,23 @@ export function KitchenBoard() {
         )}
       </div>
 
-      {/* wrapper que mede a largura para ajustar --card-min */}
-      <div ref={wrapRef} className="flex-1">
+      {/* mede área útil */}
+      <div ref={wrapRef} className="flex-1 min-h-0">
         <div
-          className="grid h-full gap-4 [grid-template-columns:repeat(auto-fit,minmax(var(--card-min),1fr))]"
-          style={{ ['--card-min' as any]: `${minCard}px` }}
+          className="grid min-h-0 content-start grid-flow-row-dense"
+          /* content-start = evita “buracão” entre as linhas (alinhar topo) */
+          style={{
+            gap: `${layout.gap}px`,
+            gridTemplateColumns: `repeat(auto-fit,minmax(${layout.minCard}px,1fr))`,
+          }}
         >
           <AnimatePresence initial={false}>
             {sorted.map(o => (
               <OrderCard
                 key={o.id}
                 o={o}
-                onStart={() => start(o)}
                 onComplete={() => complete(o)}
+                density={layout.ultra ? 'ultra' : (layout.dense ? 'dense' : 'normal')}
               />
             ))}
           </AnimatePresence>
