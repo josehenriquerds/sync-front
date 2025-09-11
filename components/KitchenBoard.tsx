@@ -13,8 +13,8 @@ const keepActive = (list: Order[]) => list.filter(o => o.status !== 'Completed')
 
 // calcula a melhor min-width para caber o maior nº de colunas possível
 function calcMinCardWidth(containerWidth: number, gap: number) {
-  // ajuste estes limites conforme sua densidade mínima aceitada
-  const MIN = 260; // menor largura aceitável do card (legibilidade)
+  // ajuste estes limites conforme sua densidade mínima aceitável
+  const MIN = 220; // ↓ menor = mais colunas em FHD
   const MAX = 480; // evita cards gigantes em 4K
   // tenta do maior nº de colunas para o menor e para quando couber >= MIN
   for (const cols of [8,7,6,5,4,3,2]) {
@@ -24,7 +24,7 @@ function calcMinCardWidth(containerWidth: number, gap: number) {
   return MIN;
 }
 
-export function KitchenBoard({ tv = false }: { tv?: boolean }) {
+export function KitchenBoard() {
   const [orders, setOrders] = useState<Order[]>([])
   const [alert, setAlert] = useState<{show: boolean; text: string}>({ show: false, text: '' })
   const { toast } = useToast()
@@ -90,10 +90,9 @@ export function KitchenBoard({ tv = false }: { tv?: boolean }) {
   })
 
   return (
-    <>
-      {/* topbar minimalista: na TV, mostramos só o botão de som (se necessário) */}
-      <div className={tv ? "mb-2 flex items-center justify-end" : "mb-3 flex items-center justify-between"}>
-        {!tv && <h2 className="text-sm font-medium text-neutral-600">Pedidos ativos</h2>}
+    <div className="h-full flex flex-col">
+      {/* topbar minimalista (só o botão de som quando preciso) */}
+      <div className="mb-2 flex items-center justify-end">
         {!enabled && (
           <button
             className="text-sm rounded-xl border px-3 py-1 shadow-sm hover:shadow transition"
@@ -106,15 +105,9 @@ export function KitchenBoard({ tv = false }: { tv?: boolean }) {
       </div>
 
       {/* wrapper que mede a largura para ajustar --card-min */}
-      <div ref={wrapRef} className={tv ? "h-[calc(100svh-48px)]" : ""}>
+      <div ref={wrapRef} className="flex-1">
         <div
-          className="
-            grid
-            gap-4
-            // grade fluida: caber o máximo de colunas com min-width controlada
-            [grid-template-columns:repeat(auto-fit,minmax(var(--card-min),1fr))]
-            h-full
-          "
+          className="grid h-full gap-4 [grid-template-columns:repeat(auto-fit,minmax(var(--card-min),1fr))]"
           style={{ ['--card-min' as any]: `${minCard}px` }}
         >
           <AnimatePresence initial={false}>
@@ -135,6 +128,6 @@ export function KitchenBoard({ tv = false }: { tv?: boolean }) {
         text={alert.text}
         onDone={() => setAlert({ show: false, text: '' })}
       />
-    </>
+    </div>
   )
 }

@@ -1,27 +1,17 @@
 // app/kitchen/page.tsx
-export const dynamic = 'force-dynamic'
+export const dynamic = 'force-dynamic' // evita SSG/erro de prerender
 
 import { KitchenBoard } from "../../components/KitchenBoard"
 import { BackButton } from "../../components/ui/back-button"
 
-type SearchParams = { tv?: string }
-
-export default function KitchenPage({ searchParams }: { searchParams?: SearchParams }) {
-  const isTV = (searchParams?.tv ?? '') === '1'
-
+export default function KitchenPage() {
   return (
-    <div className={isTV
-      ? "h-[100svh] w-screen overflow-hidden p-[clamp(8px,1.2vw,24px)]"
-      : "space-y-3"}
-    >
-      {!isTV && (
-        <>
-          <BackButton />
-          <h1 className="text-xl font-semibold">Painel da Cozinha</h1>
-        </>
-      )}
-
-      <KitchenBoard tv={isTV} />
+    // cobre a viewport inteira, ignorando qualquer max-w do layout global
+    <div className="fixed inset-0 z-50 overflow-hidden bg-neutral-50">
+      <BackButton />
+      <div className="h-[100svh] w-screen overflow-hidden p-[clamp(8px,1.2vw,24px)]">
+        <KitchenBoard />
+      </div>
     </div>
   )
 }
