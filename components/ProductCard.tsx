@@ -74,7 +74,7 @@ export function ProductCard({ id, name, category, prepSeconds, available, refres
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
       <Card className={`p-4 relative ${available ? 'border-green-200' : 'border-neutral-200 opacity-60'}`}>
         <div className="text-sm text-neutral-500">{category}</div>
-        <div className="text-lg font-semibold">{name}</div>
+        <div className="text-sm sm:text-base md:text-lg font-semibold leading-tight break-words hyphens-auto">{name}</div>
         <div className="text-xs text-neutral-500">prep ~ {Math.round(prepSeconds / 60)} min</div>
 
         <div className="mt-3 flex flex-wrap gap-2">
