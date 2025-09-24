@@ -7,6 +7,7 @@ import ProductsToolbar, { Filter } from '../../components/ProductsToolbar'
 import ProductGrid from '../../components/ProductGrid'
 import { listProducts, type Product } from '../../lib/api'
 import { BackButton } from '../../components/ui/back-button'
+import { ActiveCountBadge, useActiveOrdersCount } from '../../components/ActiveCountBadge'
 
 export default function SalonPage() {
   return (
@@ -18,6 +19,8 @@ export default function SalonPage() {
 
 function SalonInner() {
   const sp = useSearchParams()
+  const activeOrdersCount = useActiveOrdersCount()
+
   const initialCats = useMemo(() => {
     const raw = sp.get('cat') || ''
     return raw ? raw.split(',') : []
@@ -28,6 +31,7 @@ function SalonInner() {
     categories: initialCats,
     onlyAvailable: true,
     sort: 'az',
+    showAll: initialCats.length === 0, // Pré-selecionar "Todos" se não há categorias específicas na URL
   })
 
   const [items, setItems] = useState<Product[]>([])
@@ -38,7 +42,7 @@ function SalonInner() {
     try {
       const data = await listProducts({
         q: filter.q,
-        categories: filter.categories,
+        categories: filter.showAll ? [] : filter.categories,
         onlyAvailable: filter.onlyAvailable,
         sort: filter.sort,
         // se a sua toolbar tiver toggles de porção/recorrente, passe aqui:
@@ -74,12 +78,20 @@ function SalonInner() {
       <div className="flex items-center justify-between">
         <BackButton />
         <h1 className="text-xl font-semibold">Pedido Rápido</h1>
-        <a href="/categories" className="text-sm underline">
-          Categorias
-        </a>
+        <div className="flex items-center gap-3">
+          <ActiveCountBadge count={activeOrdersCount} />
+          <a href="/categories" className="text-sm underline">
+            Categorias
+          </a>
+        </div>
       </div>
 
-      <ProductsToolbar allCategories={allCategories} initial={filter} onChange={setFilter} />
+      <ProductsToolbar
+        allCategories={allCategories}
+        initial={filter}
+        onChange={setFilter}
+        enableShowAll={true}
+      />
 
       {loading && <div className="text-sm text-neutral-500">Carregando…</div>}
       {!loading && <ProductGrid items={items} />}

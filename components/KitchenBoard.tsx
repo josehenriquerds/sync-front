@@ -16,20 +16,21 @@ type Layout = { minCard: number; gap: number; dense: boolean; ultra: boolean }
 // Calcula layout para caber o MÁXIMO de colunas/linhas, inclusive < 960×540
 function computeLayout(width: number, height: number): Layout {
   const small = (height < 560 || width < 960)
-  const targetMin = small ? 180 : 220
+  const tiny = (height < 540 || width < 960)
+  const targetMin = tiny ? 140 : small ? 160 : 220
   const MAX = 480
-  const gap = small ? 8 : 16
+  const gap = tiny ? 6 : small ? 8 : 16
 
   for (let cols = 12; cols >= 2; cols--) {
     const w = Math.floor((width - gap * (cols - 1)) / cols)
     if (w >= targetMin) {
       const minCard = Math.min(w, MAX)
-      const dense = (minCard <= 220) || small
-      const ultra = (minCard <= 190) || (height < 520)
+      const dense = (minCard <= 200) || small
+      const ultra = (minCard <= 150) || tiny
       return { minCard, gap, dense, ultra }
     }
   }
-  return { minCard: targetMin, gap, dense: true, ultra: height < 520 }
+  return { minCard: targetMin, gap, dense: true, ultra: tiny }
 }
 
 export function KitchenBoard() {
@@ -73,7 +74,7 @@ export function KitchenBoard() {
         })
       })
     })
-  }, [])
+  }, [beep, ensureSound])
 
   async function complete(o: Order) {
     await api.updateOrderStatus(o.id, 'Completed')

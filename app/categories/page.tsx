@@ -6,6 +6,7 @@ import Link from 'next/link'
 import ProductGrid from '../../components/ProductGrid'
 import { listProducts } from '../../lib/api'
 import { BackButton } from '../../components/ui/back-button'
+import { ActiveCountBadge, useActiveOrdersCount } from '../../components/ActiveCountBadge'
 
 const MACROS = [
   'Saladas',
@@ -22,6 +23,7 @@ export default function CategoriesPage() {
   const [q, setQ] = useState('')
   const [loading, setLoading] = useState(false)
   const [items, setItems] = useState<any[]>([])
+  const activeOrdersCount = useActiveOrdersCount()
 
   // busca em tempo real
   useEffect(()=>{
@@ -41,7 +43,10 @@ export default function CategoriesPage() {
   return (
     <div className="mx-auto max-w-5xl p-4 space-y-6">
       <div>
-        <BackButton />
+        <div className="flex items-center justify-between mb-4">
+          <BackButton />
+          <ActiveCountBadge count={activeOrdersCount} />
+        </div>
         <h1 className="text-2xl font-semibold">Categorias</h1>
         <p className="text-sm text-neutral-600">Toque em uma macro para ver os itens ou pesquise abaixo e envie direto.</p>
       </div>

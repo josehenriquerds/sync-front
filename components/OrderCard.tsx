@@ -42,24 +42,29 @@ export function OrderCard({
   const urgentRing = o.isUrgent ? 'ring-4 ring-red-300 border-red-400' : 'border-neutral-200'
 
   const aspect =
-    density === 'ultra' ? 'aspect-[16/9]' :
-    density === 'dense' ? 'aspect-[16/9]' : 'aspect-[4/3]'
+    density === 'ultra' ? 'aspect-[5/4]' :
+    density === 'dense' ? 'aspect-[4/3]' : 'aspect-[4/3]'
 
-  const pad = density === 'ultra' ? 'p-2' : density === 'dense' ? 'p-[clamp(8px,0.9vw,14px)]' : 'p-[clamp(10px,1vw,16px)]'
-  const listSpace = density === 'ultra' ? 'space-y-1' : density === 'dense' ? 'space-y-1.5' : 'space-y-2'
+  const pad = density === 'ultra' ? 'p-2' : density === 'dense' ? 'p-2.5' : 'p-[clamp(10px,1vw,16px)]'
+  const listSpace = density === 'ultra' ? 'space-y-0.5' : density === 'dense' ? 'space-y-1' : 'space-y-2'
 
   const titleSize = density === 'ultra'
-    ? 'text-[clamp(11px,0.8vw,13px)]'
+    ? 'text-xs leading-tight'
     : density === 'dense'
-    ? 'text-[clamp(12px,0.95vw,15px)]'
+    ? 'text-sm leading-tight'
     : 'text-[clamp(13px,1vw,16px)]'
 
   const qtySize = density === 'ultra'
-    ? 'text-[clamp(11px,0.8vw,13px)]'
+    ? 'text-xs'
+    : density === 'dense'
+    ? 'text-sm'
     : 'text-[clamp(12px,0.95vw,14px)]'
 
-  const btnH = density === 'ultra' ? 'h-[34px]' : density === 'dense' ? 'h-[clamp(36px,2.2vw,44px)]' : 'h-[clamp(40px,2.6vw,48px)]'
-  const btnText = density === 'ultra' ? 'text-[12px]' : 'text-[clamp(13px,1vw,16px)]'
+  const btnH = density === 'ultra' ? 'h-8' : density === 'dense' ? 'h-9' : 'h-[clamp(40px,2.6vw,48px)]'
+  const btnText = density === 'ultra' ? 'text-xs' : density === 'dense' ? 'text-sm' : 'text-[clamp(13px,1vw,16px)]'
+
+  const badgeText = density === 'ultra' ? 'text-[10px]' : density === 'dense' ? 'text-xs' : 'text-[clamp(11px,0.85vw,13px)]'
+  const timerText = density === 'ultra' ? 'text-[10px]' : density === 'dense' ? 'text-xs' : 'text-[clamp(11px,0.85vw,13px)]'
 
   return (
     <motion.div
@@ -75,10 +80,10 @@ export function OrderCard({
         ].join(' ')}
       >
         {/* Cabeçalho compacto */}
-        <div className="flex items-start justify-between gap-2">
+        <div className="flex items-start justify-between gap-1.5">
           {o.isUrgent ? (
-            <span className="px-2 py-0.5 rounded-full text-[clamp(11px,0.85vw,13px)] font-bold bg-red-100 text-red-800 border border-red-200">
-              URGENTE
+            <span className={`px-2 py-0.5 rounded-full font-bold bg-red-100 text-red-800 border border-red-200 ${badgeText}`}>
+              {density === 'ultra' ? 'URG' : 'URGENTE'}
             </span>
           ) : (
             <PriorityBadge pctLeft={pctLeft} />
@@ -87,7 +92,7 @@ export function OrderCard({
           <span
             className={[
               'px-2 py-0.5 rounded-full border font-semibold tabular-nums',
-              'text-[clamp(11px,0.85vw,13px)]',
+              timerText,
               leftBg, leftColor,
             ].join(' ')}
             title="Tempo restante estimado"
@@ -97,20 +102,20 @@ export function OrderCard({
         </div>
 
         {/* Lista de itens (ultra: mais enxuta) */}
-        <ul className={`mt-[clamp(6px,0.8vw,10px)] pr-1 overflow-auto ${listSpace}`}>
+        <ul className={`mt-2 pr-1 overflow-auto ${listSpace}`}>
           {o.items.map((i, idx) => (
-            <li key={idx} className="flex items-center justify-between">
-              <div className="min-w-0 pr-2">
+            <li key={idx} className="flex items-center justify-between gap-1">
+              <div className="min-w-0 flex-1">
                 <span className={`font-semibold tracking-tight line-clamp-1 ${titleSize}`}>
                   {i.productName}
-                </span>{' '}
+                </span>
                 {density !== 'ultra' && (
-                  <span className="text-neutral-500 text-[clamp(11px,0.85vw,13px)]">
+                  <span className={`text-neutral-500 ${density === 'dense' ? 'text-xs' : 'text-[clamp(11px,0.85vw,13px)]'}`}>
                     (~{Math.round(i.prepSeconds / 60)}m)
                   </span>
                 )}
               </div>
-              <span className={`px-2 py-0.5 rounded-full border font-bold ${qtySize}`}>
+              <span className={`px-1.5 py-0.5 rounded-full border font-bold flex-shrink-0 ${qtySize}`}>
                 x{i.quantity}
               </span>
             </li>
@@ -119,13 +124,13 @@ export function OrderCard({
 
         {/* Ação */}
         {o.status !== 'Completed' && (
-          <div className="mt-[clamp(6px,0.8vw,10px)]">
+          <div className={density === 'ultra' ? 'mt-1.5' : 'mt-2'}>
             <Button
-              className={`w-full ${btnH} ${btnText} font-semibold bg-green-600 hover:bg-green-500 text-white`}
+              className={`w-full ${btnH} ${btnText} font-semibold bg-green-600 hover:bg-green-500 text-white transition-colors`}
               onClick={onComplete}
               title="Marcar como 'Concluído'"
             >
-              Concluir
+              {density === 'ultra' ? 'OK' : 'Concluir'}
             </Button>
           </div>
         )}
