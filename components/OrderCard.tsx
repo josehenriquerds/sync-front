@@ -89,7 +89,7 @@ export function OrderCard({
             <PriorityBadge pctLeft={pctLeft} />
           )}
 
-          <span
+          {/* <span
             className={[
               'px-2 py-0.5 rounded-full border font-semibold tabular-nums',
               timerText,
@@ -98,7 +98,7 @@ export function OrderCard({
             title="Tempo restante estimado"
           >
             ~{Math.max(0, Math.ceil(left / 60))} min
-          </span>
+          </span> */}
         </div>
 
         {/* Lista de itens (ultra: mais enxuta) */}
@@ -109,11 +109,11 @@ export function OrderCard({
                 <span className={`font-semibold tracking-tight line-clamp-1 ${titleSize}`}>
                   {i.productName}
                 </span>
-                {density !== 'ultra' && (
+                {/* {density !== 'ultra' && (
                   <span className={`text-neutral-500 ${density === 'dense' ? 'text-xs' : 'text-[clamp(11px,0.85vw,13px)]'}`}>
                     (~{Math.round(i.prepSeconds / 60)}m)
                   </span>
-                )}
+                )} */}
               </div>
               <span className={`px-1.5 py-0.5 rounded-full border font-bold flex-shrink-0 ${qtySize}`}>
                 x{i.quantity}
