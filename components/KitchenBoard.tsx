@@ -17,16 +17,16 @@ type Layout = { minCard: number; gap: number; dense: boolean; ultra: boolean }
 function computeLayout(width: number, height: number): Layout {
   const small = (height < 560 || width < 960)
   const tiny = (height < 540 || width < 960)
-  const targetMin = tiny ? 140 : small ? 160 : 220
-  const MAX = 480
+  const targetMin = tiny ? 420 : small ? 480 : 660
+  const MAX = 1440
   const gap = tiny ? 6 : small ? 8 : 16
 
   for (let cols = 12; cols >= 2; cols--) {
     const w = Math.floor((width - gap * (cols - 1)) / cols)
     if (w >= targetMin) {
       const minCard = Math.min(w, MAX)
-      const dense = (minCard <= 200) || small
-      const ultra = (minCard <= 150) || tiny
+      const dense = (minCard <= 600) || small
+      const ultra = (minCard <= 450) || tiny
       return { minCard, gap, dense, ultra }
     }
   }

@@ -45,25 +45,25 @@ export function OrderCard({
     density === 'ultra' ? 'aspect-[5/4]' :
     density === 'dense' ? 'aspect-[4/3]' : 'aspect-[4/3]'
 
-  const pad = density === 'ultra' ? 'p-2' : density === 'dense' ? 'p-2.5' : 'p-[clamp(10px,1vw,16px)]'
-  const listSpace = density === 'ultra' ? 'space-y-0.5' : density === 'dense' ? 'space-y-1' : 'space-y-2'
+  const pad = density === 'ultra' ? 'p-4' : density === 'dense' ? 'p-5' : 'p-[clamp(20px,2.5vw,32px)]'
+  const listSpace = density === 'ultra' ? 'space-y-2' : density === 'dense' ? 'space-y-3' : 'space-y-4'
 
   const titleSize = density === 'ultra'
-    ? 'text-xs leading-tight'
+    ? 'text-lg leading-tight'
     : density === 'dense'
-    ? 'text-sm leading-tight'
-    : 'text-[clamp(13px,1vw,16px)]'
+    ? 'text-xl leading-tight'
+    : 'text-[clamp(24px,3vw,36px)]'
 
   const qtySize = density === 'ultra'
-    ? 'text-xs'
+    ? 'text-lg'
     : density === 'dense'
-    ? 'text-sm'
-    : 'text-[clamp(12px,0.95vw,14px)]'
+    ? 'text-xl'
+    : 'text-[clamp(20px,2.5vw,28px)]'
 
-  const btnH = density === 'ultra' ? 'h-8' : density === 'dense' ? 'h-9' : 'h-[clamp(40px,2.6vw,48px)]'
-  const btnText = density === 'ultra' ? 'text-xs' : density === 'dense' ? 'text-sm' : 'text-[clamp(13px,1vw,16px)]'
+  const btnH = density === 'ultra' ? 'h-12' : density === 'dense' ? 'h-14' : 'h-[clamp(60px,5vw,80px)]'
+  const btnText = density === 'ultra' ? 'text-lg' : density === 'dense' ? 'text-xl' : 'text-[clamp(24px,3vw,36px)]'
 
-  const badgeText = density === 'ultra' ? 'text-[10px]' : density === 'dense' ? 'text-xs' : 'text-[clamp(11px,0.85vw,13px)]'
+  const badgeText = density === 'ultra' ? 'text-base' : density === 'dense' ? 'text-lg' : 'text-[clamp(20px,2.5vw,28px)]'
   const timerText = density === 'ultra' ? 'text-[10px]' : density === 'dense' ? 'text-xs' : 'text-[clamp(11px,0.85vw,13px)]'
 
   return (
