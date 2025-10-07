@@ -1,19 +1,19 @@
 'use client'
 
-import { AnimatePresence } from "framer-motion"
-import { useState, useEffect, useLayoutEffect, useRef } from "react"
-import { Order, api } from "../lib/api"
-import { ensureStarted } from "../lib/signalr"
-import { AlertOverlay } from "./AlertOverlay"
-import { OrderCard } from "./OrderCard"
-import { useToast } from "./ui/toast"
-import { useSound } from "./useSound"
+import { AnimatePresence } from "framer-motion";
+import { useState, useEffect, useLayoutEffect, useRef } from "react";
+import { Order, api } from "../lib/api";
+import { ensureStarted } from "../lib/signalr";
+import { AlertOverlay } from "./AlertOverlay";
+import { OrderCard } from "./OrderCard";
+import { useToast } from "./ui/toast";
+import { useSound } from "./useSound";
 
 const keepActive = (list: Order[]) => list.filter(o => o.status !== 'Completed')
 
 type Layout = { minCard: number; gap: number; dense: boolean; ultra: boolean }
 
-// ✨ Calcula layout para caber o MÁXIMO de colunas/linhas (Fire TV: ~24 cards)
+// Calcula layout para caber o MÁXIMO de colunas/linhas, inclusive < 960×540
 function computeLayout(width: number, height: number): Layout {
   const small = (height < 560 || width < 960)
   const tiny = (height < 540 || width < 960)
@@ -42,7 +42,6 @@ export function KitchenBoard() {
   const wrapRef = useRef<HTMLDivElement | null>(null)
   const [layout, setLayout] = useState<Layout>({ minCard: 320, gap: 16, dense: false, ultra: false })
 
-  // ✨ ResizeObserver para ajustar densidade automaticamente
   useLayoutEffect(() => {
     const ro = new ResizeObserver(([entry]) => {
       const w = entry?.contentRect.width ?? 0
@@ -56,8 +55,7 @@ export function KitchenBoard() {
   useEffect(() => {
     api.listOrders().then(data => setOrders(keepActive(data)))
     ensureStarted().then(conn => {
-      conn.off('order:created')
-      conn.off('order:updated')
+      conn.off('order:created'); conn.off('order:updated')
 
       conn.on('order:created', (o: Order) => {
         setOrders(prev => keepActive([o, ...prev.filter(p => p.id !== o.id)]))
@@ -79,16 +77,9 @@ export function KitchenBoard() {
   }, [beep, ensureSound])
 
   async function complete(o: Order) {
-    try {
-      await api.updateOrderStatus(o.id, 'Completed')
-      setOrders(prev => prev.filter(x => x.id !== o.id))
-      toast({ title: 'Pedido concluído', description: `#${o.id.slice(0, 8)}` })
-    } catch (error) {
-      toast({
-        title: '❌ Erro ao concluir pedido',
-        description: 'Tente novamente'
-      })
-    }
+    await api.updateOrderStatus(o.id, 'Completed')
+    setOrders(prev => prev.filter(x => x.id !== o.id))
+    toast({ title: 'Pedido concluído', description: `#${o.id.slice(0, 8)}` })
   }
 
   const sorted = [...orders].sort((a, b) => {
@@ -100,7 +91,7 @@ export function KitchenBoard() {
 
   return (
     <div className="h-full flex flex-col min-h-0">
-      {/* Topbar mínima */}
+      {/* topbar mínima */}
       <div className="mb-2 flex items-center justify-end">
         {!enabled && (
           <button
@@ -113,10 +104,11 @@ export function KitchenBoard() {
         )}
       </div>
 
-      {/* Grid com ResizeObserver */}
+      {/* mede área útil */}
       <div ref={wrapRef} className="flex-1 min-h-0">
         <div
           className="grid min-h-0 content-start grid-flow-row-dense"
+          /* content-start = evita “buracão” entre as linhas (alinhar topo) */
           style={{
             gap: `${layout.gap}px`,
             gridTemplateColumns: `repeat(auto-fit,minmax(${layout.minCard}px,1fr))`,
