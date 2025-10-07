@@ -2,186 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    /* ===== TOKENS DE DENSIDADE ===== */
-    /* Compacta: máxima densidade de cards */
-    --density-compact-card-min: clamp(200px, 40vw, 280px);
-    --density-compact-gap: clamp(6px, 0.8vw, 10px);
-    --density-compact-padding: clamp(12px, 1.8vw, 20px);
-    --density-compact-title: clamp(20px, 3.5vw, 26px);
-    --density-compact-body: clamp(16px, 2.8vw, 20px);
-    --density-compact-badge: clamp(15px, 2.4vw, 19px);
-    --density-compact-button-h: clamp(52px, 7.5vw, 64px);
-    --density-compact-button-text: clamp(19px, 3.2vw, 24px);
-    --density-compact-spacing: clamp(10px, 1.5vw, 14px);
-
-    /* Padrão: equilíbrio entre legibilidade e quantidade */
-    --density-normal-card-min: clamp(240px, 45vw, 340px);
-    --density-normal-gap: clamp(10px, 1.2vw, 16px);
-    --density-normal-padding: clamp(18px, 2.5vw, 30px);
-    --density-normal-title: clamp(24px, 4vw, 34px);
-    --density-normal-body: clamp(18px, 3vw, 24px);
-    --density-normal-badge: clamp(17px, 2.8vw, 23px);
-    --density-normal-button-h: clamp(60px, 8.5vw, 76px);
-    --density-normal-button-text: clamp(22px, 3.6vw, 30px);
-    --density-normal-spacing: clamp(12px, 1.8vw, 18px);
-
-    /* Confortável: máxima legibilidade */
-    --density-comfortable-card-min: clamp(280px, 50vw, 400px);
-    --density-comfortable-gap: clamp(14px, 1.6vw, 20px);
-    --density-comfortable-padding: clamp(22px, 3vw, 38px);
-    --density-comfortable-title: clamp(28px, 4.5vw, 40px);
-    --density-comfortable-body: clamp(20px, 3.4vw, 28px);
-    --density-comfortable-badge: clamp(19px, 3.2vw, 27px);
-    --density-comfortable-button-h: clamp(68px, 9.5vw, 88px);
-    --density-comfortable-button-text: clamp(26px, 4.2vw, 36px);
-    --density-comfortable-spacing: clamp(16px, 2.2vw, 22px);
-
-    /* Valores ativos (padrão = normal) */
-    --card-min: var(--density-normal-card-min);
-    --card-gap: var(--density-normal-gap);
-    --card-padding: var(--density-normal-padding);
-    --card-title-size: var(--density-normal-title);
-    --card-body-size: var(--density-normal-body);
-    --card-badge-size: var(--density-normal-badge);
-    --card-button-h: var(--density-normal-button-h);
-    --card-button-text: var(--density-normal-button-text);
-    --card-spacing: var(--density-normal-spacing);
-
-    /* ===== OUTROS TOKENS ===== */
-    --card-aspect-ratio: 4 / 3;
-    --touch-target-min: 44px;
-  }
-
-  /* Classes de densidade (aplicadas dinamicamente) */
-  .density-compact {
-    --card-min: var(--density-compact-card-min);
-    --card-gap: var(--density-compact-gap);
-    --card-padding: var(--density-compact-padding);
-    --card-title-size: var(--density-compact-title);
-    --card-body-size: var(--density-compact-body);
-    --card-badge-size: var(--density-compact-badge);
-    --card-button-h: var(--density-compact-button-h);
-    --card-button-text: var(--density-compact-button-text);
-    --card-spacing: var(--density-compact-spacing);
-  }
-
-  .density-comfortable {
-    --card-min: var(--density-comfortable-card-min);
-    --card-gap: var(--density-comfortable-gap);
-    --card-padding: var(--density-comfortable-padding);
-    --card-title-size: var(--density-comfortable-title);
-    --card-body-size: var(--density-comfortable-body);
-    --card-badge-size: var(--density-comfortable-badge);
-    --card-button-h: var(--density-comfortable-button-h);
-    --card-button-text: var(--density-comfortable-button-text);
-    --card-spacing: var(--density-comfortable-spacing);
-  }
-
-  html, body {
-    @apply bg-neutral-50 text-neutral-900 antialiased;
-  }
-
-  button {
-    @apply transition duration-200;
-  }
+/* estilos globais extras */
+html, body {
+  @apply bg-neutral-50 text-neutral-900 antialiased;
 }
 
-/* ===== ANIMAÇÕES DE URGÊNCIA ===== */
-@keyframes urgentPulse {
+button {
+  @apply transition duration-200;
+}
+
+/* ===== PISCAR para pedidos urgentes ===== */
+@keyframes pulse {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5),
-                0 0 0 4px rgba(239, 68, 68, 0.3);
-    border-color: rgb(239, 68, 68);
+    opacity: 1;
   }
   50% {
-    box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.7),
-                0 0 0 12px rgba(239, 68, 68, 0);
-    border-color: rgb(220, 38, 38);
+    opacity: 0.7;
   }
-}
-
-@keyframes urgentGlow {
-  0%, 100% {
-    background-color: rgb(254 242 242);
-  }
-  50% {
-    background-color: rgb(254 226 226);
-  }
-}
-
-.urgent-pulse {
-  animation: urgentPulse 1.6s ease-in-out infinite;
-}
-
-.urgent-glow {
-  animation: urgentGlow 1.6s ease-in-out infinite;
-}
-
-/* Respeitar preferência de movimento reduzido */
-@media (prefers-reduced-motion: reduce) {
-  .urgent-pulse,
-  .urgent-glow {
-    animation: none;
-  }
-
-  .urgent-pulse {
-    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.5);
-    border-color: rgb(239, 68, 68);
-  }
-
-  .urgent-glow {
-    background-color: rgb(254 226 226);
-  }
-}
-
-/* ===== SCROLL MOBILE ===== */
-/* Container rolável - scroll vertical fluido */
-.scrollable-board {
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-  touch-action: pan-y;
-  scroll-behavior: smooth;
-}
-
-/* Container queries para cards */
-.kitchen-card {
-  container-type: inline-size;
-}
-
-@container (max-width: 280px) {
-  .kitchen-card .card-extra-info {
-    display: none;
-  }
-}
-
-/* ===== BOTÃO CONCLUIR ===== */
-.complete-button {
-  min-height: var(--touch-target-min);
-  min-width: 96px;
-  font-size: var(--card-button-text);
-  height: var(--card-button-h);
-  touch-action: manipulation; /* Evita delay de 300ms no mobile */
-}
-
-.complete-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* ===== ACESSIBILIDADE ===== */
-/* Foco visível para navegação por teclado */
-button:focus-visible,
-a:focus-visible {
-  outline: 3px solid rgb(59, 130, 246);
-  outline-offset: 2px;
-}
-
-/* Alvo de toque mínimo */
-.touch-target {
-  min-width: var(--touch-target-min);
-  min-height: var(--touch-target-min);
 }
