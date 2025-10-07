@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { useEffect, useMemo, useState, memo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Order } from '../lib/api'
 import { Button } from './ui/button'
 import { Card } from './ui/card'
@@ -11,16 +11,20 @@ function secsBetween(a: Date, b: Date) {
   return Math.max(0, Math.floor((b.getTime() - a.getTime()) / 1000))
 }
 
-interface OrderCardProps {
-  o: Order
-  onComplete: () => Promise<void>
-}
+type Density = 'normal' | 'dense' | 'ultra'
 
-export const OrderCard = memo(function OrderCard({ o, onComplete }: OrderCardProps) {
-  const maxPrep = useMemo(() => Math.max(60, ...o.items.map(i => i.prepSeconds)), [o.items])
+export function OrderCard({
+  o,
+  onComplete,
+  density = 'normal',
+}: {
+  o: Order
+  onComplete: () => void
+  density?: Density
+}) {
+  const maxPrep = useMemo(() => Math.max(60, ...o.items.map(i => i.prepSeconds)), [o])
   const created = useMemo(() => new Date(o.createdAt), [o.createdAt])
   const [now, setNow] = useState<Date>(new Date())
-  const [isCompleting, setIsCompleting] = useState(false)
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000)
@@ -35,27 +39,32 @@ export const OrderCard = memo(function OrderCard({ o, onComplete }: OrderCardPro
     pctLeft > 60 ? 'text-emerald-700' : pctLeft > 30 ? 'text-amber-700' : 'text-red-700'
   const leftBg =
     pctLeft > 60 ? 'bg-emerald-100' : pctLeft > 30 ? 'bg-amber-100' : 'bg-red-100'
+  const urgentRing = o.isUrgent ? 'ring-4 ring-red-300 border-red-400' : 'border-neutral-200'
 
-  async function handleComplete() {
-    if (isCompleting) return
+  const aspect =
+    density === 'ultra' ? 'aspect-[5/4]' :
+    density === 'dense' ? 'aspect-[4/3]' : 'aspect-[4/3]'
 
-    setIsCompleting(true)
-    try {
-      await onComplete()
-    } catch (error) {
-      // Rollback em caso de erro
-      setIsCompleting(false)
-      throw error
-    }
-  }
+  const pad = density === 'ultra' ? 'p-4' : density === 'dense' ? 'p-5' : 'p-[clamp(20px,2.5vw,32px)]'
+  const listSpace = density === 'ultra' ? 'space-y-2' : density === 'dense' ? 'space-y-3' : 'space-y-4'
 
-  const cardClasses = [
-    'kitchen-card',
-    'overflow-hidden rounded-2xl border-2 bg-white transition-all',
-    'shadow-sm hover:shadow-md',
-    isCompleting ? 'opacity-60' : '',
-    o.isUrgent ? 'urgent-pulse urgent-glow' : 'border-neutral-200',
-  ].filter(Boolean).join(' ')
+  const titleSize = density === 'ultra'
+    ? 'text-lg leading-tight'
+    : density === 'dense'
+    ? 'text-xl leading-tight'
+    : 'text-[clamp(24px,3vw,36px)]'
+
+  const qtySize = density === 'ultra'
+    ? 'text-lg'
+    : density === 'dense'
+    ? 'text-xl'
+    : 'text-[clamp(20px,2.5vw,28px)]'
+
+  const btnH = density === 'ultra' ? 'h-12' : density === 'dense' ? 'h-14' : 'h-[clamp(60px,5vw,80px)]'
+  const btnText = density === 'ultra' ? 'text-lg' : density === 'dense' ? 'text-xl' : 'text-[clamp(24px,3vw,36px)]'
+
+  const badgeText = density === 'ultra' ? 'text-base' : density === 'dense' ? 'text-lg' : 'text-[clamp(20px,2.5vw,28px)]'
+  const timerText = density === 'ultra' ? 'text-[10px]' : density === 'dense' ? 'text-xs' : 'text-[clamp(11px,0.85vw,13px)]'
 
   return (
     <motion.div
@@ -65,106 +74,67 @@ export const OrderCard = memo(function OrderCard({ o, onComplete }: OrderCardPro
       transition={{ type: 'spring', stiffness: 220, damping: 22 }}
     >
       <Card
-        className={cardClasses}
-        style={{
-          padding: 'var(--card-padding)',
-          aspectRatio: 'var(--card-aspect-ratio)',
-        }}
-        data-testid={`order-card-${o.id}`}
+        className={[
+          'card', aspect, 'overflow-hidden rounded-2xl border-2 bg-white shadow-sm',
+          pad, urgentRing, o.isUrgent ? 'animate-[pulse_1.6s_ease-in-out_infinite]' : '',
+        ].join(' ')}
       >
-        {/* Cabeçalho com badges */}
-        <div
-          className="flex items-start justify-between gap-2 mb-[var(--card-spacing)]"
-          style={{ fontSize: 'var(--card-badge-size)' }}
-        >
+        {/* Cabeçalho compacto */}
+        <div className="flex items-start justify-between gap-1.5">
           {o.isUrgent ? (
-            <div
-              className="px-3 py-1.5 rounded-full font-bold bg-red-600 text-white border-2 border-red-700 shadow-lg"
-              style={{ fontSize: 'var(--card-badge-size)' }}
-              role="status"
-              aria-live="assertive"
-              data-testid="urgent-badge"
-            >
-              🚨 URGENTE
-            </div>
+            <span className={`px-2 py-0.5 rounded-full font-bold bg-red-100 text-red-800 border border-red-200 ${badgeText}`}>
+              {density === 'ultra' ? 'URG' : 'URGENTE'}
+            </span>
           ) : (
             <PriorityBadge pctLeft={pctLeft} />
           )}
+
+          {/* <span
+            className={[
+              'px-2 py-0.5 rounded-full border font-semibold tabular-nums',
+              timerText,
+              leftBg, leftColor,
+            ].join(' ')}
+            title="Tempo restante estimado"
+          >
+            ~{Math.max(0, Math.ceil(left / 60))} min
+          </span> */}
         </div>
 
-        {/* Lista de itens */}
-        <ul
-          className="overflow-auto pr-2 flex-1 min-h-0"
-          style={{
-            marginBottom: 'var(--card-spacing)',
-            gap: 'calc(var(--card-spacing) * 0.8)',
-            display: 'flex',
-            flexDirection: 'column'
-          }}
-        >
+        {/* Lista de itens (ultra: mais enxuta) */}
+        <ul className={`mt-2 pr-1 overflow-auto ${listSpace}`}>
           {o.items.map((i, idx) => (
-            <li
-              key={idx}
-              className="flex items-center justify-between gap-2"
-            >
+            <li key={idx} className="flex items-center justify-between gap-1">
               <div className="min-w-0 flex-1">
-                <span
-                  className="font-bold tracking-tight line-clamp-2"
-                  style={{ fontSize: 'var(--card-title-size)' }}
-                >
+                <span className={`font-semibold tracking-tight line-clamp-1 ${titleSize}`}>
                   {i.productName}
                 </span>
+                {/* {density !== 'ultra' && (
+                  <span className={`text-neutral-500 ${density === 'dense' ? 'text-xs' : 'text-[clamp(11px,0.85vw,13px)]'}`}>
+                    (~{Math.round(i.prepSeconds / 60)}m)
+                  </span>
+                )} */}
               </div>
-              <span
-                className="px-3 py-1 rounded-full border-2 border-neutral-300 font-bold flex-shrink-0 bg-white"
-                style={{ fontSize: 'var(--card-body-size)', minWidth: '60px', textAlign: 'center' }}
-              >
+              <span className={`px-1.5 py-0.5 rounded-full border font-bold flex-shrink-0 ${qtySize}`}>
                 x{i.quantity}
               </span>
             </li>
           ))}
         </ul>
 
-        {/* Botão Concluir */}
+        {/* Ação */}
         {o.status !== 'Completed' && (
-          <Button
-            className="complete-button w-full font-bold bg-green-600 hover:bg-green-500 disabled:hover:bg-green-600 text-white transition-all"
-            onClick={handleComplete}
-            disabled={isCompleting}
-            aria-label={`Concluir pedido ${o.id.slice(0, 8)}`}
-            data-testid="complete-button"
-          >
-            {isCompleting ? (
-              <span className="flex items-center justify-center gap-2">
-                <svg
-                  className="animate-spin h-5 w-5"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  />
-                </svg>
-                Concluindo...
-              </span>
-            ) : (
-              'Concluir'
-            )}
-          </Button>
+          <div className={density === 'ultra' ? 'mt-1.5' : 'mt-2'}>
+            <Button
+              className={`w-full ${btnH} ${btnText} font-semibold bg-green-600 hover:bg-green-500 text-white transition-colors`}
+              onClick={onComplete}
+              title="Marcar como 'Concluído'"
+            >
+              {density === 'ultra' ? 'OK' : 'Concluir'}
+            </Button>
+          </div>
         )}
       </Card>
     </motion.div>
   )
-})
+}
