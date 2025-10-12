@@ -14,21 +14,21 @@ const keepActive = (list: Order[]) => list.filter(o => o.status !== 'Completed')
 type Layout = { minCard: number; gap: number; dense: boolean; ultra: boolean }
 
 // Calcula layout para caber o MÁXIMO de colunas/linhas, inclusive < 960×540
-// PRIORIDADE: Máximo de cards visíveis (mínimo 18 em telas pequenas)
+// PRIORIDADE: Máximo de cards visíveis (16+ em telas pequenas)
 function computeLayout(width: number, height: number): Layout {
   const small = (height < 560 || width < 960)
   const tiny = (height < 540 || width < 960)
-  // Reduzido para caber MUITO mais cards na tela (18+ em mobile)
-  const targetMin = tiny ? 280 : small ? 320 : 420
+  // MUITO reduzido para caber 16+ cards na tela
+  const targetMin = tiny ? 220 : small ? 260 : 380
   const MAX = 1600
-  const gap = tiny ? 8 : small ? 10 : 14
+  const gap = tiny ? 6 : small ? 8 : 12
 
   for (let cols = 12; cols >= 2; cols--) {
     const w = Math.floor((width - gap * (cols - 1)) / cols)
     if (w >= targetMin) {
       const minCard = Math.min(w, MAX)
       const dense = (minCard <= 600) || small
-      const ultra = (minCard <= 350) || tiny
+      const ultra = (minCard <= 280) || tiny
       return { minCard, gap, dense, ultra }
     }
   }

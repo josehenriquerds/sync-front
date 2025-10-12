@@ -41,32 +41,33 @@ export function OrderCard({
     pctLeft > 60 ? 'bg-emerald-100' : pctLeft > 30 ? 'bg-amber-100' : 'bg-red-100'
   const urgentRing = o.isUrgent ? 'ring-4 ring-red-300 border-red-400' : 'border-neutral-200'
 
+  // Aspect ratio MUITO horizontal para caber 16+ cards
   const aspect =
-    density === 'ultra' ? 'aspect-[3/2]' :
-    density === 'dense' ? 'aspect-[4/3]' : 'aspect-[4/3]'
+    density === 'ultra' ? 'aspect-[5/2]' :
+    density === 'dense' ? 'aspect-[3/2]' : 'aspect-[4/3]'
 
-  // Compacto para caber mais cards, mas mantendo legibilidade
-  const pad = density === 'ultra' ? 'p-3' : density === 'dense' ? 'p-4' : 'p-[clamp(20px,2.5vw,32px)]'
-  const listSpace = density === 'ultra' ? 'space-y-1.5' : density === 'dense' ? 'space-y-2.5' : 'space-y-4'
+  // Ultra compacto para maximizar cards visíveis
+  const pad = density === 'ultra' ? 'p-2' : density === 'dense' ? 'p-3' : 'p-[clamp(18px,2.2vw,28px)]'
+  const listSpace = density === 'ultra' ? 'space-y-1' : density === 'dense' ? 'space-y-2' : 'space-y-3.5'
 
-  // Fontes legíveis mas compactas para caber 18+ cards
+  // Fontes compactas mas legíveis
   const titleSize = density === 'ultra'
-    ? 'text-base leading-tight'
+    ? 'text-sm leading-tight'
     : density === 'dense'
-    ? 'text-lg leading-tight'
-    : 'text-[clamp(22px,2.8vw,34px)]'
+    ? 'text-base leading-tight'
+    : 'text-[clamp(20px,2.5vw,30px)]'
 
   const qtySize = density === 'ultra'
-    ? 'text-base'
+    ? 'text-sm'
     : density === 'dense'
-    ? 'text-lg'
-    : 'text-[clamp(18px,2.3vw,26px)]'
+    ? 'text-base'
+    : 'text-[clamp(16px,2vw,24px)]'
 
-  const btnH = density === 'ultra' ? 'h-10' : density === 'dense' ? 'h-12' : 'h-[clamp(56px,5vw,76px)]'
-  const btnText = density === 'ultra' ? 'text-base' : density === 'dense' ? 'text-lg' : 'text-[clamp(22px,2.8vw,34px)]'
+  const btnH = density === 'ultra' ? 'h-8' : density === 'dense' ? 'h-10' : 'h-[clamp(52px,4.5vw,68px)]'
+  const btnText = density === 'ultra' ? 'text-sm' : density === 'dense' ? 'text-base' : 'text-[clamp(20px,2.5vw,30px)]'
 
-  const badgeText = density === 'ultra' ? 'text-sm' : density === 'dense' ? 'text-base' : 'text-[clamp(18px,2.3vw,26px)]'
-  const timerText = density === 'ultra' ? 'text-[10px]' : density === 'dense' ? 'text-xs' : 'text-[clamp(11px,0.9vw,13px)]'
+  const badgeText = density === 'ultra' ? 'text-xs' : density === 'dense' ? 'text-sm' : 'text-[clamp(16px,2vw,24px)]'
+  const timerText = density === 'ultra' ? 'text-[9px]' : density === 'dense' ? 'text-[10px]' : 'text-[clamp(10px,0.85vw,12px)]'
 
   return (
     <motion.div
@@ -82,9 +83,9 @@ export function OrderCard({
         ].join(' ')}
       >
         {/* Cabeçalho compacto */}
-        <div className="flex items-start justify-between gap-1.5">
+        <div className="flex items-start justify-between gap-1">
           {o.isUrgent ? (
-            <span className={`px-2 py-0.5 rounded-full font-bold bg-red-100 text-red-800 border border-red-200 ${badgeText}`}>
+            <span className={`px-1.5 py-0.5 rounded-full font-bold bg-red-100 text-red-800 border border-red-200 ${badgeText}`}>
               {density === 'ultra' ? 'URG' : 'URGENTE'}
             </span>
           ) : (
@@ -104,9 +105,9 @@ export function OrderCard({
         </div>
 
         {/* Lista de itens (ultra: mais enxuta) */}
-        <ul className={`mt-2 pr-1 overflow-auto ${listSpace}`}>
+        <ul className={`mt-1.5 pr-1 overflow-auto ${listSpace}`}>
           {o.items.map((i, idx) => (
-            <li key={idx} className="flex items-center justify-between gap-1.5">
+            <li key={idx} className="flex items-center justify-between gap-1">
               <div className="min-w-0 flex-1">
                 <span className={`font-bold tracking-tight line-clamp-1 ${titleSize}`}>
                   {i.productName}
@@ -117,7 +118,7 @@ export function OrderCard({
                   </span>
                 )} */}
               </div>
-              <span className={`px-2 py-0.5 rounded-full border font-bold flex-shrink-0 ${qtySize}`}>
+              <span className={`px-1.5 py-0.5 rounded-full border font-bold flex-shrink-0 ${qtySize}`}>
                 x{i.quantity}
               </span>
             </li>
@@ -126,7 +127,7 @@ export function OrderCard({
 
         {/* Ação */}
         {o.status !== 'Completed' && (
-          <div className={density === 'ultra' ? 'mt-1.5' : 'mt-2.5'}>
+          <div className={density === 'ultra' ? 'mt-1' : 'mt-2'}>
             <Button
               className={`w-full ${btnH} ${btnText} font-bold bg-green-600 hover:bg-green-500 text-white transition-colors rounded-lg`}
               onClick={onComplete}
