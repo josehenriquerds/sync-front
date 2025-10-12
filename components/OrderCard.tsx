@@ -49,12 +49,12 @@ export function OrderCard({
   const pad = density === 'ultra' ? 'p-2' : density === 'dense' ? 'p-3' : 'p-[clamp(18px,2.2vw,28px)]'
   const listSpace = density === 'ultra' ? 'space-y-1' : density === 'dense' ? 'space-y-2' : 'space-y-3.5'
 
-  // FONTES GRANDES (3x maior) - Visível de longe
+  // FONTES GRANDES (3x maior) - Visível de longe + MAIS ALTURA
   const titleSize = density === 'ultra'
-    ? 'text-xl leading-tight'
+    ? 'text-2xl leading-snug'
     : density === 'dense'
-    ? 'text-2xl leading-tight'
-    : 'text-[clamp(32px,4vw,48px)]'
+    ? 'text-3xl leading-snug'
+    : 'text-[clamp(36px,4.5vw,54px)] leading-snug'
 
   const qtySize = density === 'ultra'
     ? 'text-xl'
@@ -90,18 +90,15 @@ export function OrderCard({
           </div>
         )}
 
-        {/* Lista de itens - TEXTO GRANDE E DENSO */}
+        {/* Lista de itens - APENAS NOME DO PRODUTO (SEM QUANTIDADE) */}
         <ul className={`pr-1 overflow-auto ${listSpace}`}>
           {o.items.map((i, idx) => (
-            <li key={idx} className="flex items-center justify-between gap-2">
-              <div className="min-w-0 flex-1">
-                <span className={`font-black tracking-tight line-clamp-1 ${titleSize}`}>
+            <li key={idx} className="w-full">
+              <div className="w-full">
+                <span className={`font-black tracking-tight line-clamp-2 block ${titleSize}`}>
                   {i.productName}
                 </span>
               </div>
-              <span className={`px-3 py-1.5 rounded-full border-2 font-black flex-shrink-0 bg-neutral-50 ${qtySize}`}>
-                x{i.quantity}
-              </span>
             </li>
           ))}
         </ul>
