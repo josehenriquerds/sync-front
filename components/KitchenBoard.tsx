@@ -14,19 +14,21 @@ const keepActive = (list: Order[]) => list.filter(o => o.status !== 'Completed')
 type Layout = { minCard: number; gap: number; dense: boolean; ultra: boolean }
 
 // Calcula layout para caber o MÁXIMO de colunas/linhas, inclusive < 960×540
+// PRIORIDADE: Máximo de cards visíveis (mínimo 18 em telas pequenas)
 function computeLayout(width: number, height: number): Layout {
   const small = (height < 560 || width < 960)
   const tiny = (height < 540 || width < 960)
-  const targetMin = tiny ? 420 : small ? 480 : 660
-  const MAX = 1440
-  const gap = tiny ? 6 : small ? 8 : 16
+  // Reduzido para caber MUITO mais cards na tela (18+ em mobile)
+  const targetMin = tiny ? 280 : small ? 320 : 420
+  const MAX = 1600
+  const gap = tiny ? 8 : small ? 10 : 14
 
   for (let cols = 12; cols >= 2; cols--) {
     const w = Math.floor((width - gap * (cols - 1)) / cols)
     if (w >= targetMin) {
       const minCard = Math.min(w, MAX)
       const dense = (minCard <= 600) || small
-      const ultra = (minCard <= 450) || tiny
+      const ultra = (minCard <= 350) || tiny
       return { minCard, gap, dense, ultra }
     }
   }
@@ -104,11 +106,11 @@ export function KitchenBoard() {
         )}
       </div>
 
-      {/* mede área útil */}
-      <div ref={wrapRef} className="flex-1 min-h-0">
+      {/* mede área útil - com scroll vertical para mobile */}
+      <div ref={wrapRef} className="flex-1 min-h-0 overflow-y-auto">
         <div
-          className="grid min-h-0 content-start grid-flow-row-dense"
-          /* content-start = evita “buracão” entre as linhas (alinhar topo) */
+          className="grid min-h-0 content-start grid-flow-row-dense pb-4"
+          /* content-start = evita "buracão" entre as linhas (alinhar topo) */
           style={{
             gap: `${layout.gap}px`,
             gridTemplateColumns: `repeat(auto-fit,minmax(${layout.minCard}px,1fr))`,
