@@ -5,7 +5,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { Order } from '../lib/api'
 import { Button } from './ui/button'
 import { Card } from './ui/card'
-import { PriorityBadge } from './PriorityBadge'
 
 function secsBetween(a: Date, b: Date) {
   return Math.max(0, Math.floor((b.getTime() - a.getTime()) / 1000))
@@ -50,24 +49,24 @@ export function OrderCard({
   const pad = density === 'ultra' ? 'p-2' : density === 'dense' ? 'p-3' : 'p-[clamp(18px,2.2vw,28px)]'
   const listSpace = density === 'ultra' ? 'space-y-1' : density === 'dense' ? 'space-y-2' : 'space-y-3.5'
 
-  // Fontes compactas mas legíveis
+  // FONTES GRANDES (3x maior) - Visível de longe
   const titleSize = density === 'ultra'
-    ? 'text-sm leading-tight'
+    ? 'text-xl leading-tight'
     : density === 'dense'
-    ? 'text-base leading-tight'
-    : 'text-[clamp(20px,2.5vw,30px)]'
+    ? 'text-2xl leading-tight'
+    : 'text-[clamp(32px,4vw,48px)]'
 
   const qtySize = density === 'ultra'
-    ? 'text-sm'
+    ? 'text-xl'
     : density === 'dense'
-    ? 'text-base'
-    : 'text-[clamp(16px,2vw,24px)]'
+    ? 'text-2xl'
+    : 'text-[clamp(28px,3.5vw,40px)]'
 
-  const btnH = density === 'ultra' ? 'h-8' : density === 'dense' ? 'h-10' : 'h-[clamp(52px,4.5vw,68px)]'
-  const btnText = density === 'ultra' ? 'text-sm' : density === 'dense' ? 'text-base' : 'text-[clamp(20px,2.5vw,30px)]'
+  const btnH = density === 'ultra' ? 'h-9' : density === 'dense' ? 'h-11' : 'h-[clamp(56px,5vw,72px)]'
+  const btnText = density === 'ultra' ? 'text-lg font-extrabold' : density === 'dense' ? 'text-xl font-extrabold' : 'text-[clamp(26px,3.2vw,38px)] font-extrabold'
 
-  const badgeText = density === 'ultra' ? 'text-xs' : density === 'dense' ? 'text-sm' : 'text-[clamp(16px,2vw,24px)]'
-  const timerText = density === 'ultra' ? 'text-[9px]' : density === 'dense' ? 'text-[10px]' : 'text-[clamp(10px,0.85vw,12px)]'
+  const badgeText = density === 'ultra' ? 'text-base' : density === 'dense' ? 'text-lg' : 'text-[clamp(22px,2.8vw,32px)]'
+  const timerText = density === 'ultra' ? 'text-xs' : density === 'dense' ? 'text-sm' : 'text-[clamp(12px,1vw,14px)]'
 
   return (
     <motion.div
@@ -82,54 +81,36 @@ export function OrderCard({
           pad, urgentRing, o.isUrgent ? 'animate-[pulse_1.6s_ease-in-out_infinite]' : '',
         ].join(' ')}
       >
-        {/* Cabeçalho compacto */}
-        <div className="flex items-start justify-between gap-1">
-          {o.isUrgent ? (
-            <span className={`px-1.5 py-0.5 rounded-full font-bold bg-red-100 text-red-800 border border-red-200 ${badgeText}`}>
-              {density === 'ultra' ? 'URG' : 'URGENTE'}
+        {/* Cabeçalho - Apenas URGENTE se necessário */}
+        {o.isUrgent && (
+          <div className="mb-1.5">
+            <span className={`px-2.5 py-1 rounded-full font-extrabold bg-red-100 text-red-800 border-2 border-red-300 ${badgeText}`}>
+              {density === 'ultra' ? 'URGENTE' : 'URGENTE'}
             </span>
-          ) : (
-            <PriorityBadge pctLeft={pctLeft} />
-          )}
+          </div>
+        )}
 
-          {/* <span
-            className={[
-              'px-2 py-0.5 rounded-full border font-semibold tabular-nums',
-              timerText,
-              leftBg, leftColor,
-            ].join(' ')}
-            title="Tempo restante estimado"
-          >
-            ~{Math.max(0, Math.ceil(left / 60))} min
-          </span> */}
-        </div>
-
-        {/* Lista de itens (ultra: mais enxuta) */}
-        <ul className={`mt-1.5 pr-1 overflow-auto ${listSpace}`}>
+        {/* Lista de itens - TEXTO GRANDE E DENSO */}
+        <ul className={`pr-1 overflow-auto ${listSpace}`}>
           {o.items.map((i, idx) => (
-            <li key={idx} className="flex items-center justify-between gap-1">
+            <li key={idx} className="flex items-center justify-between gap-2">
               <div className="min-w-0 flex-1">
-                <span className={`font-bold tracking-tight line-clamp-1 ${titleSize}`}>
+                <span className={`font-black tracking-tight line-clamp-1 ${titleSize}`}>
                   {i.productName}
                 </span>
-                {/* {density !== 'ultra' && (
-                  <span className={`text-neutral-500 ${density === 'dense' ? 'text-xs' : 'text-[clamp(11px,0.85vw,13px)]'}`}>
-                    (~{Math.round(i.prepSeconds / 60)}m)
-                  </span>
-                )} */}
               </div>
-              <span className={`px-1.5 py-0.5 rounded-full border font-bold flex-shrink-0 ${qtySize}`}>
+              <span className={`px-3 py-1.5 rounded-full border-2 font-black flex-shrink-0 bg-neutral-50 ${qtySize}`}>
                 x{i.quantity}
               </span>
             </li>
           ))}
         </ul>
 
-        {/* Ação */}
+        {/* Ação - BOTÃO GRANDE E VISÍVEL */}
         {o.status !== 'Completed' && (
-          <div className={density === 'ultra' ? 'mt-1' : 'mt-2'}>
+          <div className={density === 'ultra' ? 'mt-1.5' : 'mt-2.5'}>
             <Button
-              className={`w-full ${btnH} ${btnText} font-bold bg-green-600 hover:bg-green-500 text-white transition-colors rounded-lg`}
+              className={`w-full ${btnH} ${btnText} bg-green-600 hover:bg-green-500 text-white transition-colors rounded-xl shadow-md`}
               onClick={onComplete}
               title="Marcar como 'Concluído'"
             >
