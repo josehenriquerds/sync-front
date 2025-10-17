@@ -38,7 +38,7 @@ export function OrderCard({
     pctLeft > 60 ? 'text-emerald-700' : pctLeft > 30 ? 'text-amber-700' : 'text-red-700'
   const leftBg =
     pctLeft > 60 ? 'bg-emerald-100' : pctLeft > 30 ? 'bg-amber-100' : 'bg-red-100'
-  const urgentRing = o.isUrgent ? 'ring-4 ring-red-300 border-red-400' : 'border-neutral-200'
+  const urgentRing = o.isUrgent ? 'ring-4 ring-red-500 border-red-600' : 'border-black'
 
   // Aspect ratio MUITO horizontal para caber 16+ cards
   const aspect =
@@ -81,12 +81,12 @@ export function OrderCard({
           pad, urgentRing, o.isUrgent ? 'animate-[pulse_1.6s_ease-in-out_infinite]' : '',
         ].join(' ')}
       >
-        {/* Cabeçalho - Apenas URGENTE se necessário */}
+        {/* Cabeçalho - URGENTE com texto maior e mais denso */}
         {o.isUrgent && (
-          <div className="mb-1.5">
-            <span className={`px-2.5 py-1 rounded-full font-extrabold bg-red-100 text-red-800 border-2 border-red-300 ${badgeText}`}>
-              {density === 'ultra' ? 'URGENTE' : 'URGENTE'}
-            </span>
+          <div className="mb-2">
+            <div className={`px-3 py-2 rounded-xl font-black bg-red-100 text-red-900 border-2 border-red-400 ${badgeText} leading-tight`}>
+              <div className="break-words">URGENTE</div>
+            </div>
           </div>
         )}
 
@@ -103,7 +103,7 @@ export function OrderCard({
           ))}
         </ul>
 
-        {/* Ação - BOTÃO GRANDE E VISÍVEL */}
+        {/* Ação - BOTÃO GRANDE E VISÍVEL (OK apenas no mobile) */}
         {o.status !== 'Completed' && (
           <div className={density === 'ultra' ? 'mt-1.5' : 'mt-2.5'}>
             <Button
@@ -111,7 +111,9 @@ export function OrderCard({
               onClick={onComplete}
               title="Marcar como 'Concluído'"
             >
-              {density === 'ultra' ? 'OK' : 'Concluir'}
+              {/* Mostra "OK" apenas em telas pequenas (mobile), "Concluir" em telas maiores */}
+              <span className="md:hidden">{density === 'ultra' ? 'OK' : 'OK'}</span>
+              <span className="hidden md:inline">{density === 'ultra' ? 'OK' : 'Concluir'}</span>
             </Button>
           </div>
         )}
